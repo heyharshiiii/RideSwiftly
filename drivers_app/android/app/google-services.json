@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "163937758802",
+    "firebase_url": "https://rideswiftly-ceb15-default-rtdb.firebaseio.com",
+    "project_id": "rideswiftly-ceb15",
+    "storage_bucket": "rideswiftly-ceb15.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:163937758802:android:f7db1d90e20eede906398b",
+        "android_client_info": {
+          "package_name": "com.example.drivers_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwMMDbMHLLk_ukiq33WF38Hrz8GIORB0Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:163937758802:android:0121c60942fe127506398b",
+        "android_client_info": {
+          "package_name": "com.example.users_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwMMDbMHLLk_ukiq33WF38Hrz8GIORB0Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
