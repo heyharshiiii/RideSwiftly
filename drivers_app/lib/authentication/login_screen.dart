@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) =>
-            LoadingDialog(messageText: "Logging you in..."));
+            LoadingDialog(messageText: "Logging you in...."));
     final User? userFirebase = (await FirebaseAuth.instance
             .signInWithEmailAndPassword(
       email: _emailController.text.trim(),
