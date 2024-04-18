@@ -9,11 +9,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:users_app/appInfo/appInfo.dart';
 import 'package:users_app/authentication/login_screen.dart';
 import 'package:users_app/authentication/signup_screen.dart';
 import 'package:users_app/global/global.dart';
+import 'package:users_app/global/trip_var.dart';
 import 'package:users_app/methods/common_methods.dart';
 import 'package:users_app/models/address_model.dart';
 import 'package:users_app/models/direction_details.dart';
@@ -38,6 +40,8 @@ class _HomePageState extends State<HomePage> {
   double searchContainerHeight = 76;
   double bottomMapPadding = 0;
   double rideDetailsContainerHeight = 0;
+  double requestContainerHeight = 0;
+  double tripContainerHeight = 0;
   DirectionDetails? tripDirectionDetailsInfo;
   AddressModel? dropOffLocation;
   Position? pickPosition;
@@ -45,6 +49,8 @@ class _HomePageState extends State<HomePage> {
   Set<Polyline> polylineSet = {};
   Set<Marker> markerSet = {};
   Set<Circle> circleSet = {};
+  bool isDrawerOpened = true;
+  String stateOfApp = "normal";
 
   loadData() {
     //await getUserInfoAndCheckBlockStatus();
@@ -149,7 +155,8 @@ class _HomePageState extends State<HomePage> {
     double DobDropOffLat = double.parse(dropOffLocation.latitudePosition!);
     double DobDropOffLng = double.parse(dropOffLocation.longitudePosition!);
     List<LatLng> latlng = [
-      LatLng(double.parse(pickUpLocation!.latitudePosition!), double.parse(pickUpLocation!.longitudePosition!)),
+      LatLng(double.parse(pickUpLocation!.latitudePosition!),
+          double.parse(pickUpLocation!.longitudePosition!)),
       LatLng(DobDropOffLat, DobDropOffLng)
     ];
 
@@ -181,13 +188,14 @@ class _HomePageState extends State<HomePage> {
       searchContainerHeight = 0;
       bottomMapPadding = 300;
       rideDetailsContainerHeight = 240;
+      isDrawerOpened = false;
     });
     print("DETAILS!" + tripDirectionDetailsInfo.toString());
 
     // for (int i = 0; i < 2; i++) {
     //   markerSet.add(
     //     Marker(
-          
+
     //       markerId: MarkerId(i.toString()),
     //       position: latlng[i],
     //       icon:
@@ -196,16 +204,15 @@ class _HomePageState extends State<HomePage> {
     //           InfoWindow(title: pickUpLocation.placeName, snippet: "Location"),
     //     ),
     //   );
-      
+
     //   polylineSet.add(Polyline(
     //   polylineId: PolylineId('1'),
     //   color: Colors.blue,
     //   points: latlng
     // ));
     // }
-    
 
-     Navigator.pop(context);
+    Navigator.pop(context);
 
     ///DRAWING ROUTE USING POLYLINE
     PolylinePoints pointsPolyline = PolylinePoints();
@@ -238,12 +245,12 @@ class _HomePageState extends State<HomePage> {
     //FIT POLYLINE INTO MAP
 
     LatLngBounds boundsLatLng;
-   
+
     if (pickPosition!.latitude! > DobDropOffLat &&
         pickPosition!.longitude! > DobDropOffLng) {
       boundsLatLng = LatLngBounds(
-          southwest:LatLng(DobDropOffLat, DobDropOffLng),
-          northeast:  LatLng(pickPosition!.latitude, pickPosition!.longitude));
+          southwest: LatLng(DobDropOffLat, DobDropOffLng),
+          northeast: LatLng(pickPosition!.latitude, pickPosition!.longitude));
     } else if (pickPosition!.longitude! > DobDropOffLng) {
       boundsLatLng = LatLngBounds(
           southwest: LatLng(pickPosition!.latitude, DobDropOffLng),
@@ -263,7 +270,6 @@ class _HomePageState extends State<HomePage> {
 
     //ADD MARKERSSSSSSS
 
-    
     Marker pickUpPointMarker = Marker(
         markerId: MarkerId("pickUpPointMarkerID"),
         position: LatLng(pickPosition!.latitude, pickPosition!.longitude),
@@ -284,28 +290,62 @@ class _HomePageState extends State<HomePage> {
     });
 
     Circle pickUpPointCircle = Circle(
-      circleId: CircleId(
-        "pickUpCircleID"),
+        circleId: CircleId("pickUpCircleID"),
         strokeColor: Colors.black,
         strokeWidth: 4,
         radius: 14,
         center: LatLng(pickPosition!.latitude, pickPosition!.longitude),
-        fillColor: Colors.green
-    );
-Circle destPointCircle = Circle(
-      circleId: CircleId(
-        "destCircleID"),
+        fillColor: Colors.green);
+    Circle destPointCircle = Circle(
+        circleId: CircleId("destCircleID"),
         strokeColor: Colors.black,
-          strokeWidth: 4,
-          radius: 14,
-          center:  LatLng(DobDropOffLat,DobDropOffLng),
-          fillColor: Colors.blue
-      );
+        strokeWidth: 4,
+        radius: 14,
+        center: LatLng(DobDropOffLat, DobDropOffLng),
+        fillColor: Colors.blue);
 
-      setState(() {
-        // circleSet.add(pickUpPointCircle);
-        // circleSet.add(destPointCircle);
-      });
+    setState(() {
+      // circleSet.add(pickUpPointCircle);
+      // circleSet.add(destPointCircle);
+    });
+  }
+
+  resetAppNow() {
+    setState(() {
+      polylineCoordinates.clear();
+      polylineSet.clear();
+      markerSet.clear();
+      circleSet.clear();
+      rideDetailsContainerHeight = 0;
+      requestContainerHeight = 0;
+      tripContainerHeight = 0;
+      searchContainerHeight = 76;
+      bottomMapPadding = 200;
+      isDrawerOpened = true;
+
+      status = "";
+      nameDriver = "";
+      photoDriver = "";
+      phoneNumberDriver = "";
+      carDetailsDriver = "";
+      tripStatusDisplay = "Driver is arriving";
+    });
+  }
+
+  displayRequestContainer() {
+    setState(() {
+      rideDetailsContainerHeight = 0;
+      requestContainerHeight = 220;
+      bottomMapPadding = 200;
+      isDrawerOpened = true;
+    });
+    //send ride request
+  }
+  cancelRideRequest(){
+    //remove ride request from database
+    setState(() {
+      stateOfApp="normal";
+    });
   }
 
   @override
@@ -444,7 +484,11 @@ Circle destPointCircle = Circle(
             left: 19,
             child: GestureDetector(
               onTap: () {
-                sKey.currentState!.openDrawer();
+                if (isDrawerOpened == true) {
+                  sKey.currentState!.openDrawer();
+                } else {
+                  resetAppNow();
+                }
               },
               child: Container(
                 decoration: BoxDecoration(
@@ -459,11 +503,11 @@ Circle destPointCircle = Circle(
                     ),
                   ],
                 ),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   backgroundColor: Colors.grey,
                   radius: 20,
                   child: Icon(
-                    Icons.menu,
+                    isDrawerOpened == true ? Icons.menu : Icons.close,
                     color: Colors.black87,
                   ),
                 ),
@@ -608,7 +652,15 @@ Circle destPointCircle = Circle(
 
                                     //Text(dropOffLocation!.placeName.toString().split(" ")[0]),
                                     GestureDetector(
-                                      onTap: () {},
+                                      onTap: () {
+                                        setState(() {
+                                          stateOfApp = "requesting";
+                                        });
+                                        displayRequestContainer();
+                                        //get nearest available online driver
+
+                                        //search driver
+                                      },
                                       child: Image.asset(
                                         "assets/images/uberexec.png",
                                         height: 122,
@@ -632,6 +684,66 @@ Circle destPointCircle = Circle(
                               ),
                             ),
                           ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              )),
+
+          //request container
+          Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                height: requestContainerHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 15.0,
+                      spreadRadius: 0.5,
+                      offset: Offset(0.7, 0.7),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 12,
+                      ),
+                      SizedBox(
+                        width: 200,
+                        child: LoadingAnimationWidget.flickr(
+                            leftDotColor: Colors.greenAccent,
+                            rightDotColor: Colors.pinkAccent,
+                            size: 50),
+                      ),
+
+                      SizedBox(height: 20,),
+
+                      GestureDetector(
+                        onTap: (){
+                          resetAppNow();
+                          cancelRideRequest();
+                        },
+                        child: Container(
+                          height: 50,
+                          width: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white70,
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(width: 1.5,color: const Color.fromRGBO(158, 158, 158, 1)),
+                          ),
+                          child: Icon(Icons.close,color: Colors.black,size:25 ,),
                         ),
                       )
                     ],
