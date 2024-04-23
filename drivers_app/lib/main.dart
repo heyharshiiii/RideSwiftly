@@ -1,8 +1,11 @@
 import 'package:drivers_app/authentication/login_screen.dart';
 import 'package:drivers_app/firebase_options.dart';
+import 'package:drivers_app/pages/home_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 //import 'package:users_app/firebase_options.dart';
 void main() async
 {
@@ -32,7 +35,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black
       ),
-      home: LoginScreen(),
+      home: FirebaseAuth.instance.currentUser==null? LoginScreen():HomePage(),
     );
   }
 }
