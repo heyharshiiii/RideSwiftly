@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-
+import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +17,10 @@ import 'package:users_app/authentication/signup_screen.dart';
 import 'package:users_app/global/global.dart';
 import 'package:users_app/global/trip_var.dart';
 import 'package:users_app/methods/common_methods.dart';
+import 'package:users_app/methods/manage_drivers_method.dart';
 import 'package:users_app/models/address_model.dart';
 import 'package:users_app/models/direction_details.dart';
+import 'package:users_app/models/online_nearby_drivers.dart';
 import 'package:users_app/pages/search_dest_page.dart';
 import 'package:users_app/widgets/loading_dialog.dart';
 
@@ -51,6 +53,20 @@ class _HomePageState extends State<HomePage> {
   Set<Circle> circleSet = {};
   bool isDrawerOpened = true;
   String stateOfApp = "normal";
+  bool nearbyOnlineDriversKeysLoaded = false;
+  BitmapDescriptor? carIconNearbyDriver;
+
+  makeDriverNearbyCarIcon() {
+    if (carIconNearbyDriver == null) {
+      ImageConfiguration configuration =
+          createLocalImageConfiguration(context, size: Size(0.5, 0.5));
+      BitmapDescriptor.fromAssetImage(
+              configuration, "assets/images/tracking.png")
+          .then((iconImage) {
+        carIconNearbyDriver = iconImage;
+      });
+    }
+  }
 
   loadData() {
     //await getUserInfoAndCheckBlockStatus();
@@ -60,6 +76,7 @@ class _HomePageState extends State<HomePage> {
 
       //setState(() {});
     });
+
     //getUserInfoAndCheckBlockStatus();
   }
 
@@ -102,10 +119,9 @@ class _HomePageState extends State<HomePage> {
     await CommonMethods.convertCoordinatesToHumanReadable(
         currentPositionOfUser!, context);
     await getUserInfoAndCheckBlockStatus();
+    await initializeGeoFireListener();
     return positionOfUser;
   }
-
-  final List<Marker> _markers = <Marker>[];
 
   Future<void> _signOut() async {
     await _auth.signOut();
@@ -289,25 +305,108 @@ class _HomePageState extends State<HomePage> {
       markerSet.add(destPointMarker);
     });
 
-    Circle pickUpPointCircle = Circle(
-        circleId: CircleId("pickUpCircleID"),
-        strokeColor: Colors.black,
-        strokeWidth: 4,
-        radius: 14,
-        center: LatLng(pickPosition!.latitude, pickPosition!.longitude),
-        fillColor: Colors.green);
-    Circle destPointCircle = Circle(
-        circleId: CircleId("destCircleID"),
-        strokeColor: Colors.black,
-        strokeWidth: 4,
-        radius: 14,
-        center: LatLng(DobDropOffLat, DobDropOffLng),
-        fillColor: Colors.blue);
+    // Circle pickUpPointCircle = Circle(
+    //     circleId: CircleId("pickUpCircleID"),
+    //     strokeColor: Colors.black,
+    //     strokeWidth: 4,
+    //     radius: 14,
+    //     center: LatLng(pickPosition!.latitude, pickPosition!.longitude),
+    //     fillColor: Colors.green);
+    // Circle destPointCircle = Circle(
+    //     circleId: CircleId("destCircleID"),
+    //     strokeColor: Colors.black,
+    //     strokeWidth: 4,
+    //     radius: 14,
+    //     center: LatLng(DobDropOffLat, DobDropOffLng),
+    //     fillColor: Colors.blue);
 
+    // setState(() {
+    //   // circleSet.add(pickUpPointCircle);
+    //   // circleSet.add(destPointCircle);
+    // });
+  }
+
+  updateAvailableNearbyOnlineDriversonMap() {
+    print("updated");
     setState(() {
-      // circleSet.add(pickUpPointCircle);
-      // circleSet.add(destPointCircle);
+      markerSet.clear();
     });
+    Set<Marker> markersTempSet = Set<Marker>();
+    for (OnlineNearbyDrivers eachOnlineNearbyDriver
+        in ManageDriversMethods.nearbyOnlineDriversList) {
+      LatLng driverCurrentPosition = LatLng(
+          eachOnlineNearbyDriver.latDriver!, eachOnlineNearbyDriver.lngDriver!);
+      Marker driverMarker = Marker(
+          markerId: MarkerId(
+              "driver ID= " + eachOnlineNearbyDriver.uidDriver.toString()),
+              position: driverCurrentPosition,
+              icon: carIconNearbyDriver!
+              );
+      markersTempSet.add(driverMarker);
+    }
+    setState(() {
+      markerSet = markersTempSet;
+    });
+  }
+
+  initializeGeoFireListener() {
+    print("I AM GEO");
+    Geofire.initialize("onlineDrivers");
+    print("yyyyyyyyy");
+    Geofire.queryAtLocation(currentPositionOfUser!.latitude,
+            currentPositionOfUser!.longitude, 22)!
+        .listen(
+          (driverEvent) {
+      if (driverEvent != null) {
+        var onlineDriverChild = driverEvent["callBack"];
+        switch (onlineDriverChild) {
+          case Geofire.onKeyEntered:
+            //display nearest online drivers that gets inside the radius or becomes online
+            OnlineNearbyDrivers onlineNearbyDrivers = OnlineNearbyDrivers();
+            onlineNearbyDrivers.uidDriver = driverEvent["key"];
+            onlineNearbyDrivers.latDriver = driverEvent["latitude"];
+            onlineNearbyDrivers.lngDriver = driverEvent["longitude"];
+           
+            ManageDriversMethods.nearbyOnlineDriversList
+                .add(onlineNearbyDrivers);
+           if (nearbyOnlineDriversKeysLoaded == true) {
+              //update driver on google map
+              updateAvailableNearbyOnlineDriversonMap();
+            }
+            break;
+         
+          case Geofire.onKeyExited:
+            //display nearest online drivers that leaves the circle or goes offline
+            ManageDriversMethods.removeDriverFromList(driverEvent["key"]);
+            //update drivers on google map
+            updateAvailableNearbyOnlineDriversonMap();
+            break;
+
+          case Geofire.onKeyMoved:
+            //display nearest online drivers that is moving within the circle
+            OnlineNearbyDrivers onlineNearbyDrivers = OnlineNearbyDrivers();
+            onlineNearbyDrivers.uidDriver = driverEvent["key"];
+            onlineNearbyDrivers.latDriver = driverEvent["latitude"];
+            onlineNearbyDrivers.lngDriver = driverEvent["longitude"];
+            ManageDriversMethods.updateOnlineNearbyDriversLocation(
+                onlineNearbyDrivers);
+            //update driver on google map
+             print("laaaaat"+driverEvent["latitude"]);
+            updateAvailableNearbyOnlineDriversonMap();
+            break;
+
+          case Geofire.onGeoQueryReady:
+            //display nearest online drivers which are already there bydefault
+            nearbyOnlineDriversKeysLoaded = true;
+            //update drivers on google map
+            updateAvailableNearbyOnlineDriversonMap();
+            break;
+          
+        }
+      }
+    }
+     
+    );
   }
 
   resetAppNow() {
@@ -341,15 +440,17 @@ class _HomePageState extends State<HomePage> {
     });
     //send ride request
   }
-  cancelRideRequest(){
+
+  cancelRideRequest() {
     //remove ride request from database
     setState(() {
-      stateOfApp="normal";
+      stateOfApp = "normal";
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    makeDriverNearbyCarIcon();
     return Scaffold(
       key: sKey,
       drawer: Container(
@@ -727,11 +828,11 @@ class _HomePageState extends State<HomePage> {
                             rightDotColor: Colors.pinkAccent,
                             size: 50),
                       ),
-
-                      SizedBox(height: 20,),
-
+                      SizedBox(
+                        height: 20,
+                      ),
                       GestureDetector(
-                        onTap: (){
+                        onTap: () {
                           resetAppNow();
                           cancelRideRequest();
                         },
@@ -741,9 +842,15 @@ class _HomePageState extends State<HomePage> {
                           decoration: BoxDecoration(
                             color: Colors.white70,
                             borderRadius: BorderRadius.circular(25),
-                            border: Border.all(width: 1.5,color: const Color.fromRGBO(158, 158, 158, 1)),
+                            border: Border.all(
+                                width: 1.5,
+                                color: const Color.fromRGBO(158, 158, 158, 1)),
                           ),
-                          child: Icon(Icons.close,color: Colors.black,size:25 ,),
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.black,
+                            size: 25,
+                          ),
                         ),
                       )
                     ],
