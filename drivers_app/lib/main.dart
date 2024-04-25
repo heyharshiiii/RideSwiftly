@@ -10,13 +10,23 @@ import 'package:firebase_core/firebase_core.dart';
 void main() async
 {
   WidgetsFlutterBinding.ensureInitialized();
+ 
    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await Permission.locationWhenInUse.isDenied.then((valueOfPermission){
+      await Permission.notification.isDenied.then((valueOfPermission1){
+    if(valueOfPermission1)
+    {
+      Permission.notification.request();
+    }
+  });
+ await Permission.locationWhenInUse.isDenied.then((valueOfPermission){
     if(valueOfPermission)
     {
       Permission.locationWhenInUse.request();
     }
-  });
+  }); 
+
+ 
+
   runApp(MyApp());
 }
 

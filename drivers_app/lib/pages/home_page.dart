@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:drivers_app/global/global.dart';
+import 'package:drivers_app/pushNotification/push_notification_system.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -45,6 +46,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     loadData();
+    initialisePushNotificationSystem();
   }
 
   //update map theme func
@@ -123,6 +125,16 @@ class _HomePageState extends State<HomePage> {
       controllerGoogleMap!.animateCamera(CameraUpdate.newLatLng(positionLatLng));
     });
   }
+
+  initialisePushNotificationSystem()
+  {
+      PushNotificationSystem notificationSystem=PushNotificationSystem();
+      notificationSystem.generateDeviceRegistrationToken();
+      notificationSystem.startListeningForNewNotification();
+
+  }
+
+ 
 
   @override
   Widget build(BuildContext context) {
