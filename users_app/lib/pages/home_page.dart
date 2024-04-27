@@ -11,6 +11,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:restart_app/restart_app.dart';
 import 'package:users_app/appInfo/appInfo.dart';
 import 'package:users_app/authentication/login_screen.dart';
 import 'package:users_app/authentication/signup_screen.dart';
@@ -18,6 +19,7 @@ import 'package:users_app/global/global.dart';
 import 'package:users_app/global/trip_var.dart';
 import 'package:users_app/methods/common_methods.dart';
 import 'package:users_app/methods/manage_drivers_method.dart';
+import 'package:users_app/methods/push_notification_system.dart';
 import 'package:users_app/models/address_model.dart';
 import 'package:users_app/models/direction_details.dart';
 import 'package:users_app/models/online_nearby_drivers.dart';
@@ -431,6 +433,7 @@ class _HomePageState extends State<HomePage> {
       carDetailsDriver = "";
       tripStatusDisplay = "Driver is arriving";
     });
+    Restart.restartApp();
   }
 
   displayRequestContainer() {
@@ -500,7 +503,11 @@ class _HomePageState extends State<HomePage> {
     showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (BuildContext context) => InfoDialog(title: "No Driver Available",description: "No driver found in nearby location. Please try again shortly",));
+        builder: (BuildContext context) => InfoDialog(
+              title: "No Driver Available",
+              description:
+                  "No driver found in nearby location. Please try again shortly",
+            ));
   }
 
   searchDriver() {
@@ -510,17 +517,43 @@ class _HomePageState extends State<HomePage> {
       resetAppNow();
       noDriverAvailable();
       return;
-    }
-    else
-    {
-      var currentDriver=availableNearbyOnlineDriversList![0];
-      //send notification to this currentDriver
-         
+    } else {
+      var currentDriver = availableNearbyOnlineDriversList![0];
+      //send notification to this currentDriver --> SELECTED DRIVER
+      sendNotificationToDriver(currentDriver);
       availableNearbyOnlineDriversList!.removeAt(0);
     }
     print(availableNearbyOnlineDriversList);
-        //remove ride request from database
+    //remove ride request from database
     //tripRequestRef!.remove();
+  }
+
+  sendNotificationToDriver(OnlineNearbyDrivers currentDriver) {
+    //update driver's newtrip status
+    DatabaseReference currentDriverRef = FirebaseDatabase.instance
+        .ref()
+        .child("drivers")
+        .child(currentDriver.uidDriver.toString())
+        .child("newTripStatus"); //travel till this point
+    currentDriverRef.set(tripRequestRef!.key);
+
+    //get current driver registration token
+    DatabaseReference tokenOfCurrentDriverRef = FirebaseDatabase.instance
+        .ref()
+        .child("drivers")
+        .child(currentDriver.uidDriver.toString())
+        .child("deviceToken");
+    tokenOfCurrentDriverRef.once().then((dataSnapshot) {
+      if (dataSnapshot.snapshot.value != null) {
+        String deviceToken = dataSnapshot.snapshot.value.toString();
+
+        //SEND NOTIFICATION
+        PushNotificationService.sendNotificationToSelectedDriver(
+            deviceToken, context, tripRequestRef!.key.toString());
+      } else {
+        return;
+      }
+    });
   }
 
   @override
@@ -698,8 +731,10 @@ class _HomePageState extends State<HomePage> {
                                   availableNearbyOnlineDriversList =
                                       ManageDriversMethods
                                           .nearbyOnlineDriversList;
-                                 // if(availableNearbyOnlineDriversList!.isEmpty)        
-                                          print("AVAILLL"+availableNearbyOnlineDriversList.toString());
+                                  // if(availableNearbyOnlineDriversList!.isEmpty)
+                                  print("AVAILLL" +
+                                      availableNearbyOnlineDriversList
+                                          .toString());
 
                                   //search driver
                                   searchDriver();
