@@ -433,7 +433,7 @@ class _HomePageState extends State<HomePage> {
       carDetailsDriver = "";
       tripStatusDisplay = "Driver is arriving";
     });
-    Restart.restartApp();
+  //  
   }
 
   displayRequestContainer() {
@@ -482,7 +482,7 @@ class _HomePageState extends State<HomePage> {
       "carDeatils": "",
       "driverLocation": driverCoOrdinates,
       "driverName": "",
-      "driverName": "",
+      "driverPhone": "",
       "driverPhoto": "",
       "fareAmount": "",
       "status": "new",
@@ -553,6 +553,36 @@ class _HomePageState extends State<HomePage> {
       } else {
         return;
       }
+      const oneTickPerSec = Duration(seconds: 1);
+      var timerCountDown = Timer.periodic(oneTickPerSec, (timer) {
+        requestTimeOutDriver -= 1;
+
+        //when trip request is not requesting means trip request cancelled - stop timer
+        if (stateOfApp != "requesting") {
+          timer.cancel();
+         currentDriverRef.set("cancelled");
+         currentDriverRef.onDisconnect();
+          requestTimeOutDriver = 20;
+        }
+        //when trip request is accepted by online nearest driver driver
+       currentDriverRef.onValue.listen((dataSnapshot) {
+          if (dataSnapshot.snapshot.value.toString() == "accepted") {
+            timer.cancel();
+            currentDriverRef.onDisconnect();
+            requestTimeOutDriver = 20;
+          }
+        });
+        //if 20 seconds passed - send notification to next nearby online driver
+        if (requestTimeOutDriver == 0) {
+          currentDriverRef.set("timeout");
+            timer.cancel();
+            currentDriverRef.onDisconnect();
+            requestTimeOutDriver = 20;
+        //send notification to next nearby online driver
+        searchDriver();    
+
+       }
+      });
     });
   }
 
