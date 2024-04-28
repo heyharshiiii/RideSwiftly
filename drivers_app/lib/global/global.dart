@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -11,3 +12,6 @@ String googleMapKey="AIzaSyCXp7ByOEplT_94XrrwB78tmJSkBXQWOa4";
   );
 
   StreamSubscription<Position>? positionStreamHomePage;
+  int driverTripRequestTimeout=20;
+
+  final audioPlayer=AssetsAudioPlayer();

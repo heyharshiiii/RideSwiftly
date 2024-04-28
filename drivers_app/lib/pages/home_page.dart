@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
 
   //update map theme func
   void updateMapTheme(GoogleMapController controller) {
-    getJsonFileFromThemes("themes/dark_style.json")
+    getJsonFileFromThemes("themes/night_style.json")
         .then((value) => setGoogleMapStyle(value, controller));
   }
 
@@ -130,7 +130,7 @@ class _HomePageState extends State<HomePage> {
   {
       PushNotificationSystem notificationSystem=PushNotificationSystem();
       notificationSystem.generateDeviceRegistrationToken();
-      notificationSystem.startListeningForNewNotification();
+      notificationSystem.startListeningForNewNotification(context);
 
   }
 
