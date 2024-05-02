@@ -15,10 +15,11 @@ class TripDetails
 
   TripDetails({
     this.tripID,
-    this.dropOffAddress,
-    this.dropOffLatLng,
-    this.pickUpAddress,
     this.pickUpLatLng,
+     this.pickUpAddress,
+    this.dropOffLatLng,
+    this.dropOffAddress,
+   
     this.userName,
     this.userPhone
   });

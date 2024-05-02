@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:drivers_app/global/global.dart';
+import 'package:drivers_app/methods/map_theme_methods.dart';
 import 'package:drivers_app/pushNotification/push_notification_system.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -23,15 +24,16 @@ class _HomePageState extends State<HomePage> {
   final Completer<GoogleMapController> _googleMapCompleterController =
       Completer<GoogleMapController>();
   GoogleMapController? controllerGoogleMap;
-  Position? currentPositionOfUser;
+  Position? currentPositionOfDriver;
   Color? colorToShow = Colors.green;
   String titleToShow = "GO ONLINE NOW";
   bool isDriverAvailable = false;
   final List<Marker> _markers = <Marker>[];
   DatabaseReference? newTripRequestReference;
+  MapThemeMethods themeMethods = MapThemeMethods();
 
   loadData() {
-    getCurrentLiveLocationOfUser().then((value) {
+    getCurrentLiveLocationOfDriver().then((value) {
       print("My loc");
       print(value.latitude.toString() + " " + value.longitude.toString());
       _markers.add(Marker(
@@ -42,36 +44,36 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  retrieveCurrentDriverInfo() {
+    FirebaseDatabase.instance
+        .ref()
+        .child("drivers")
+        .child(FirebaseAuth.instance.currentUser!.uid)
+        .once()
+        .then((snap) {
+      driverName = (snap.snapshot.value as Map)["name"];
+      driverPhone = (snap.snapshot.value as Map)["phone"];
+      carColor = (snap.snapshot.value as Map)["car_details"]["vehicleColor"];
+      carModel = (snap.snapshot.value as Map)["car_details"]["vehicleModel"];
+      carNumber = (snap.snapshot.value as Map)["car_details"]["vehicleNumber"];
+    });
+    initialisePushNotificationSystem();
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     loadData();
-    initialisePushNotificationSystem();
+    retrieveCurrentDriverInfo();
   }
 
-  //update map theme func
-  void updateMapTheme(GoogleMapController controller) {
-    getJsonFileFromThemes("themes/night_style.json")
-        .then((value) => setGoogleMapStyle(value, controller));
-  }
-
-  Future<String> getJsonFileFromThemes(String mapStylePath) async {
-    ByteData byteData = await rootBundle.load(mapStylePath);
-    var list = byteData.buffer
-        .asInt8List(byteData.offsetInBytes, byteData.lengthInBytes);
-    return utf8.decode(list);
-  }
-
-  setGoogleMapStyle(String googleMapStyle, GoogleMapController controller) {
-    controller.setMapStyle(googleMapStyle);
-  }
-
-  Future<Position> getCurrentLiveLocationOfUser() async {
+  Future<Position> getCurrentLiveLocationOfDriver() async {
     Position positionOfUser = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.bestForNavigation);
-    currentPositionOfUser = positionOfUser;
+    currentPositionOfDriver = positionOfUser;
+    driverCurrentPosition = currentPositionOfDriver;
     LatLng positionOfUserInLatLng = LatLng(
-        currentPositionOfUser!.latitude, currentPositionOfUser!.longitude);
+        currentPositionOfDriver!.latitude, currentPositionOfDriver!.longitude);
     CameraPosition cameraPosition =
         CameraPosition(target: positionOfUserInLatLng, zoom: 15);
     controllerGoogleMap!
@@ -79,16 +81,16 @@ class _HomePageState extends State<HomePage> {
     return positionOfUser;
   }
 
-  goOfflineNow(){
+  goOfflineNow() {
     //stop sharing live location updates
     Geofire.removeLocation(FirebaseAuth.instance.currentUser!.uid);
 
     //stop listening to newtrip status
     newTripRequestReference!.onDisconnect();
     newTripRequestReference!.remove();
-    newTripRequestReference=null;
-
+    newTripRequestReference = null;
   }
+
   goOnlineNow() {
     //all drivers who are available for new trip requests
     Geofire.initialize("onlineDrivers");
@@ -96,45 +98,44 @@ class _HomePageState extends State<HomePage> {
     // and their lat long will be showed
     Geofire.setLocation(
       FirebaseAuth.instance.currentUser!.uid,
-      currentPositionOfUser!.latitude,
-      currentPositionOfUser!.longitude,
+      currentPositionOfDriver!.latitude,
+      currentPositionOfDriver!.longitude,
     );
     newTripRequestReference = FirebaseDatabase.instance
         .ref()
         .child("drivers")
         .child(FirebaseAuth.instance.currentUser!.uid)
         .child("newTripStatus");
-        newTripRequestReference!.set("waiting");
-        newTripRequestReference!.onValue.listen((event) { });
+    newTripRequestReference!.set("waiting");
+    newTripRequestReference!.onValue.listen((event) {});
   }
-  setAndGetLocationUpdates(){
+
+  setAndGetLocationUpdates() {
     //getting live location
-   positionStreamHomePage=Geolocator.getPositionStream().listen((Position position) {
-      currentPositionOfUser=position;
-      if(isDriverAvailable)
-      {
+    positionStreamHomePage =
+        Geolocator.getPositionStream().listen((Position position) {
+      currentPositionOfDriver = position;
+      if (isDriverAvailable) {
         //setting the live location updates  in realtime
-         Geofire.setLocation(
-      FirebaseAuth.instance.currentUser!.uid,
-      currentPositionOfUser!.latitude,
-      currentPositionOfUser!.longitude,
-    );
+        Geofire.setLocation(
+          FirebaseAuth.instance.currentUser!.uid,
+          currentPositionOfDriver!.latitude,
+          currentPositionOfDriver!.longitude,
+        );
       }
 
-      LatLng positionLatLng=LatLng(currentPositionOfUser!.latitude, currentPositionOfUser!.longitude);
-      controllerGoogleMap!.animateCamera(CameraUpdate.newLatLng(positionLatLng));
+      LatLng positionLatLng = LatLng(currentPositionOfDriver!.latitude,
+          currentPositionOfDriver!.longitude);
+      controllerGoogleMap!
+          .animateCamera(CameraUpdate.newLatLng(positionLatLng));
     });
   }
 
-  initialisePushNotificationSystem()
-  {
-      PushNotificationSystem notificationSystem=PushNotificationSystem();
-      notificationSystem.generateDeviceRegistrationToken();
-      notificationSystem.startListeningForNewNotification(context);
-
+  initialisePushNotificationSystem() {
+    PushNotificationSystem notificationSystem = PushNotificationSystem();
+    notificationSystem.generateDeviceRegistrationToken();
+    notificationSystem.startListeningForNewNotification(context);
   }
-
- 
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +149,7 @@ class _HomePageState extends State<HomePage> {
             initialCameraPosition: googlePlexInitialPosition,
             onMapCreated: (GoogleMapController mapController) {
               controllerGoogleMap = mapController;
-              updateMapTheme(controllerGoogleMap!);
+              themeMethods.updateMapTheme(controllerGoogleMap!);
               _googleMapCompleterController.complete(controllerGoogleMap);
             },
           ),
@@ -247,7 +248,6 @@ class _HomePageState extends State<HomePage> {
                                                 goOnlineNow();
                                                 //get driver location updates
                                                 setAndGetLocationUpdates();
-                                               
 
                                                 Navigator.pop(context);
 
@@ -259,7 +259,7 @@ class _HomePageState extends State<HomePage> {
                                                 });
                                               } else {
                                                 //go offline
-                                                  goOfflineNow();
+                                                goOfflineNow();
                                                 Navigator.pop(context);
 
                                                 setState(() {

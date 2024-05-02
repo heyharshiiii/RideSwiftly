@@ -29,14 +29,14 @@ class _SignupScreenState extends State<SignupScreen> {
   String urlOfUploadedImage="";
   checkIfNetworkIsAvailable() async{
     await cMethods.checkConnectivity(context);
-    if(imageFile!=null)
-    {
+    // if(imageFile!=null)
+    // {
       signUpFormValidation();
-    }
-    else
-    {
-      cMethods.displaySnackBar("Please choose an image", context);
-    }
+    //}
+    // else
+    // {
+    //   cMethods.displaySnackBar("Please choose an image", context);
+    // }
   }
 
   signUpFormValidation() {
@@ -60,8 +60,8 @@ class _SignupScreenState extends State<SignupScreen> {
       cMethods.displaySnackBar("Please Enter Car Color", context);
     }
     else {
-      uploadImageToStorage();
-      
+      //uploadImageToStorage();
+      registerNewUser();
     }
   }
 
@@ -92,7 +92,7 @@ class _SignupScreenState extends State<SignupScreen> {
       "vehicleNumber":_vehicleNumberController.text.trim(),
     };
     Map userDataMap = {
-      "photo":urlOfUploadedImage,
+      "photo":"",
       "name": _drivernameController.text.trim(),
       "car_details": driverVehicleInfo,
       "email": _emailController.text.trim(),

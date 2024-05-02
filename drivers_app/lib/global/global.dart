@@ -12,6 +12,15 @@ String googleMapKey="AIzaSyCXp7ByOEplT_94XrrwB78tmJSkBXQWOa4";
   );
 
   StreamSubscription<Position>? positionStreamHomePage;
+  StreamSubscription<Position>? positionStreamNewTripPage;
   int driverTripRequestTimeout=20;
 
   final audioPlayer=AssetsAudioPlayer();
+  Position? driverCurrentPosition;
+
+
+String driverName="";
+String driverPhone="";
+String carColor="";
+String carNumber="";
+String carModel="";

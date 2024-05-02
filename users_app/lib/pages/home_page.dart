@@ -217,25 +217,7 @@ class _HomePageState extends State<HomePage> {
     });
     print("DETAILS!" + tripDirectionDetailsInfo.toString());
 
-    // for (int i = 0; i < 2; i++) {
-    //   markerSet.add(
-    //     Marker(
-
-    //       markerId: MarkerId(i.toString()),
-    //       position: latlng[i],
-    //       icon:
-    //           (latlng[i]==latlng[0])? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow):BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-    //       infoWindow:
-    //           InfoWindow(title: pickUpLocation.placeName, snippet: "Location"),
-    //     ),
-    //   );
-
-    //   polylineSet.add(Polyline(
-    //   polylineId: PolylineId('1'),
-    //   color: Colors.blue,
-    //   points: latlng
-    // ));
-    // }
+  
 
     Navigator.pop(context);
 
@@ -461,8 +443,8 @@ class _HomePageState extends State<HomePage> {
       "longitude": pickUpLocation!.longitudePosition.toString(),
     };
     Map dropOffDestCoordinatesMap = {
-      "latitude": pickUpLocation!.latitudePosition.toString(),
-      "longitude": pickUpLocation!.longitudePosition.toString(),
+      "latitude": dropOffDestLocation!.latitudePosition.toString(),
+      "longitude": dropOffDestLocation!.longitudePosition.toString(),
     };
     Map driverCoOrdinates = {
       "latitude": "",
@@ -479,11 +461,10 @@ class _HomePageState extends State<HomePage> {
       "pickUpAddress": pickUpLocation!.humanReadableAddress,
       "dropOffAddress": dropOffDestLocation!.placeName,
       "driverId": "waiting",
-      "carDeatils": "",
       "driverLocation": driverCoOrdinates,
       "driverName": "",
       "driverPhone": "",
-      "driverPhoto": "",
+      //"driverPhoto": "",
       "fareAmount": "",
       "status": "new",
     };
