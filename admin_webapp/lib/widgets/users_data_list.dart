@@ -52,7 +52,7 @@ class _UsersDataListState extends State<UsersDataList> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 cMethods.data(
-                  2,
+                  1,
                   Text(itemsList[index]["id"].toString()),
                 ),
                 cMethods.data(
@@ -71,7 +71,12 @@ class _UsersDataListState extends State<UsersDataList> {
                   1,
                   itemsList[index]["blockStatus"] == "no"
                       ? ElevatedButton(
-                          onPressed: () {},
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                          onPressed: () async{
+                             await FirebaseDatabase.instance.ref().child("users").child(itemsList[index]["id"]).update({
+                              "blockStatus":"yes"
+                            });
+                          },
                           child: const Text(
                             "Block",
                             style: TextStyle(
@@ -81,7 +86,12 @@ class _UsersDataListState extends State<UsersDataList> {
                           ),
                         )
                       : ElevatedButton(
-                          onPressed: () {},
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                          onPressed: ()  async{
+                            await FirebaseDatabase.instance.ref().child("users").child(itemsList[index]["id"]).update({
+                              "blockStatus":"no"
+                            });
+                          },
                           child: const Text(
                             "Approve",
                             style: TextStyle(

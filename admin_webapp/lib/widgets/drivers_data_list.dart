@@ -87,7 +87,12 @@ class _DriversDataListState extends State<DriversDataList> {
                   1,
                   itemsList[index]["blockStatus"] == "no"
                       ? ElevatedButton(
-                          onPressed: () {},
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                          onPressed: () async{
+                            await FirebaseDatabase.instance.ref().child("drivers").child(itemsList[index]["id"]).update({
+                              "blockStatus":"yes"
+                            });
+                          },
                           child: const Text(
                             "Block",
                             style: TextStyle(
@@ -97,7 +102,12 @@ class _DriversDataListState extends State<DriversDataList> {
                           ),
                         )
                       : ElevatedButton(
-                          onPressed: () {},
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                          onPressed: ()  async{
+                             await FirebaseDatabase.instance.ref().child("drivers").child(itemsList[index]["id"]).update({
+                              "blockStatus":"no"
+                            });
+                          },
                           child: const Text(
                             "Approve",
                             style: TextStyle(

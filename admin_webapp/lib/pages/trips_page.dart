@@ -1,3 +1,5 @@
+
+import 'package:admin_webapp/widgets/trips_data_list.dart';
 import 'package:flutter/material.dart';
 
 import '../methods/common_methods.dart';
@@ -44,7 +46,7 @@ class _TripsPageState extends State<TripsPage>
 
               Row(
                 children: [
-                  cMethods.header(1, "TRIP ID"),
+                  cMethods.header(2, "TRIP ID"),
                   cMethods.header(1, "USER NAME"),
                   cMethods.header(1, "DRIVER NAME"),
                   cMethods.header(1, "CAR DETAILS"),
@@ -55,7 +57,8 @@ class _TripsPageState extends State<TripsPage>
               ),
 
               //display data
-
+             // TripsDataList(),
+             TripsDataList()
             ],
           ),
         ),

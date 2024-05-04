@@ -33,7 +33,7 @@ class CommonMethods
       flex: dataFlexValue,
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
+          border: Border.all(color: Colors.black),
         ),
         child: Padding(
           padding: const EdgeInsets.all(10.0),
