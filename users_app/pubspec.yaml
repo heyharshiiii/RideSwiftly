@@ -50,6 +50,7 @@ dependencies:
   loading_animation_widget: ^1.2.1
   flutter_geofire: ^2.0.3
   restart_app: ^1.2.1
+  url_launcher: ^6.2.6
   #geolocator: ^11.0.0
   
 

@@ -181,7 +181,7 @@ class _NotificationDialogState extends State<NotificationDialog>
 
                       Expanded(
                         child: Text(
-                          widget.tripDetailsInfo!.pickUpLatLng.toString(),
+                          widget.tripDetailsInfo!.pickUpAddress!.toString(),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 2,
                           style: const TextStyle(

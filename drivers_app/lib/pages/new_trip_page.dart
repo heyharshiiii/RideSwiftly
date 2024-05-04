@@ -233,18 +233,18 @@ class _NewTripPageState extends State<NewTripPage> {
         context: context,
         builder: (BuildContext context) =>
             LoadingDialog(messageText: "Please Wait!!"));
-    var driverCurrentLocationLatLng = LatLng(
-        driverCurrentPosition!.latitude, driverCurrentPosition!.longitude);
+    // var driverCurrentLocationLatLng = LatLng(
+    //     driverCurrentPosition!.latitude, driverCurrentPosition!.longitude);
     var directionDetailsEndInfo =
         await CommonMethods.getDirectionDetailsFromAPI(
             widget.newTripDetailsInfo!.pickUpLatLng!.longitude,
             widget.newTripDetailsInfo!.pickUpLatLng!.latitude,
-            driverCurrentLocationLatLng.longitude,
-            driverCurrentLocationLatLng.latitude);
+            widget.newTripDetailsInfo!.dropOffLatLng!.longitude,
+            widget.newTripDetailsInfo!.dropOffLatLng!.longitude);
     Navigator.pop(context);
 
     String fareAmount =
-        (cmethods.calculateFareAmount(directionDetailsEndInfo!)).toStringAsFixed(2);
+        (cmethods.calculateFareAmount(directionDetailsEndInfo!));
     FirebaseDatabase.instance
         .ref()
         .child("tripRequests")
@@ -286,7 +286,7 @@ class _NewTripPageState extends State<NewTripPage> {
 
         double newTotalEarnings = previousTotalEarnings + fareAmountForTrip;
 
-        driverEarningsRef.set(newTotalEarnings);
+        driverEarningsRef.set(double.parse(newTotalEarnings.toStringAsFixed(2)));
       } else {
         driverEarningsRef.set(fareAmount);
       }
