@@ -41,7 +41,7 @@
         <p>Fare Amount is collected after each ride and deposited in Driver's earnings.</p>
     </li>
     <li>
-        <p>All Completed Trips are displayed to user driver and admin in their respective apps.</p>
+        <p>All Completed Trips are displayed to user, driver and admin in their respective apps.</p>
     </li>
 </ul>
 <h3 name="tech-stack">TechStacks Used</h3>
