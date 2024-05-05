@@ -48,16 +48,16 @@
 <h5>Mobile Application</h5>
 <ul>
     <li>
-        <p>Flutter💙</p>
+        <p>Flutter</p>
     </li>
     <li>
-        <p>FireBase🔥</p>
+        <p>FireBase</p>
     </li>
     <li>
-        <p>Provider State Management💫</p>
+        <p>Provider State Management</p>
     </li>
     <li>
-        <p>LocationIQ APIs❤️</p>
+        <p>LocationIQ APIs</p>
     </li>
 </ul>
 <h3 name="DemoVideo">A small Demo:📷</h3>
